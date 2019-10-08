@@ -8,12 +8,12 @@
  * Author URI:  https://wpguru4u.com
  * Donate link: https://github.com/oakwoodgates/wontrapi-extension-demo
  * License:     GPLv2
- * Text Domain: wontrapi-xd
+ * Text Domain: wontrapi-extension-demo
  * Domain Path: /languages
  *
  * @link    https://github.com/oakwoodgates/wontrapi-extension-demo
  *
- * @package Wontrapi_XD
+ * @package Wontrapi_Extension_Demo
  * @version 0.1.0
  *
  */
@@ -37,7 +37,7 @@
  */
 
 
-class Wontrapi_XD {
+class Wontrapi_Extension_Demo {
 
 	/**
 	 * Current version.
@@ -82,7 +82,7 @@ class Wontrapi_XD {
 	/**
 	 * Singleton instance of plugin.
 	 *
-	 * @var    Wontrapi_XD
+	 * @var    Wontrapi_Extension_Demo
 	 * @since  0.1.0
 	 */
 	protected static $single_instance = null;
@@ -91,7 +91,7 @@ class Wontrapi_XD {
 	 * Creates or returns an instance of this class.
 	 *
 	 * @since   0.1.0
-	 * @return  Wontrapi_XD A single instance of this class.
+	 * @return  Wontrapi_Extension_Demo A single instance of this class.
 	 */
 	public static function get_instance() {
 		if ( null === self::$single_instance ) {
@@ -115,6 +115,15 @@ class Wontrapi_XD {
 	}
 
 	/**
+	 * Initiate our hooks.
+	 *
+	 * @since  0.1.0
+	 */
+	public function hooks() {
+		add_action( 'init', array( $this, 'init' ), 0 );
+	}
+
+	/**
 	 * Init hooks
 	 *
 	 * @since  0.1.0
@@ -122,7 +131,7 @@ class Wontrapi_XD {
 	public function init() {
 
 		// Load translated strings for plugin.
-		load_plugin_textdomain( 'wontrapi-xd', false, dirname( $this->basename ) . '/languages/' );
+		load_plugin_textdomain( 'wontrapi-extension-demo', false, dirname( $this->basename ) . '/languages/' );
 
 		$this->include_dependencies();
 
@@ -161,20 +170,6 @@ class Wontrapi_XD {
 	}
 
 	/**
-	 * Deactivates this plugin, hook this function on admin_init.
-	 *
-	 * @since  0.1.0
-	 */
-	public function deactivate_me() {
-
-		// We do a check for deactivate_plugins before calling it, to protect
-		// any developers from accidentally calling it too early and breaking things.
-		if ( function_exists( 'deactivate_plugins' ) ) {
-			deactivate_plugins( $this->basename );
-		}
-	}
-
-	/**
 	 * Check that all plugin requirements are met.
 	 *
 	 * @since  0.1.0
@@ -200,6 +195,20 @@ class Wontrapi_XD {
 	}
 
 	/**
+	 * Deactivates this plugin, hook this function on admin_init.
+	 *
+	 * @since  0.1.0
+	 */
+	public function deactivate_me() {
+
+		// We do a check for deactivate_plugins before calling it, to protect
+		// any developers from accidentally calling it too early and breaking things.
+		if ( function_exists( 'deactivate_plugins' ) ) {
+			deactivate_plugins( $this->basename );
+		}
+	}
+
+	/**
 	 * Adds a notice to the dashboard if the plugin requirements are not met.
 	 *
 	 * @since  0.1.0
@@ -207,7 +216,7 @@ class Wontrapi_XD {
 	public function requirements_not_met_notice() {
 
 		// Compile default message.
-		$default_message = sprintf( __( 'Wontrapi XD is missing requirements and has been <a href="%s">deactivated</a>. Please make sure all requirements are available.', 'wontrapi-xd' ), admin_url( 'plugins.php' ) );
+		$default_message = sprintf( __( 'Wontrapi XD is missing requirements and has been <a href="%s">deactivated</a>. Please make sure all requirements are available.', 'wontrapi-extension-demo' ), admin_url( 'plugins.php' ) );
 
 		// Default details to null.
 		$details = null;
@@ -224,15 +233,6 @@ class Wontrapi_XD {
 			<?php echo wp_kses_post( $details ); ?>
 		</div>
 		<?php
-	}
-
-	/**
-	 * Initiate our hooks.
-	 *
-	 * @since  0.1.0
-	 */
-	public function hooks() {
-		add_action( 'init', array( $this, 'init' ), 0 );
 	}
 
 	/**
@@ -263,14 +263,14 @@ class Wontrapi_XD {
 }
 
 /**
- * Grab the Wontrapi_XD object and return it.
- * Wrapper for Wontrapi_XD::get_instance().
+ * Grab the Wontrapi_Extension_Demo object and return it.
+ * Wrapper for Wontrapi_Extension_Demo::get_instance().
  *
  * @since  0.1.0
- * @return Wontrapi_XD  Singleton instance of plugin class.
+ * @return Wontrapi_Extension_Demo  Singleton instance of plugin class.
  */
 function wontrapi_xd() {
-	return Wontrapi_XD::get_instance();
+	return Wontrapi_Extension_Demo::get_instance();
 }
 
 // Kick it off.
