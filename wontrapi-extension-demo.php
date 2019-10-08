@@ -234,6 +234,32 @@ class Wontrapi_XD {
 	public function hooks() {
 		add_action( 'init', array( $this, 'init' ), 0 );
 	}
+
+	/**
+	 * Activate the plugin.
+	 *
+	 * @since  0.1.0
+	 */
+	public function _activate() {
+		// Bail early if requirements aren't met.
+		if ( ! $this->check_requirements() ) {
+			return;
+		}
+
+		// Make sure any rewrite functionality has been loaded.
+		flush_rewrite_rules();
+	}
+
+	/**
+	 * Deactivate the plugin.
+	 * Uninstall routines should be in uninstall.php.
+	 *
+	 * @since  0.1.0
+	 */
+	public function _deactivate() {
+		// Add deactivation cleanup functionality here.
+	}
+
 }
 
 /**
@@ -249,3 +275,7 @@ function wontrapi_xd() {
 
 // Kick it off.
 add_action( 'plugins_loaded', array( wontrapi_xd(), 'hooks' ) );
+
+// Activation and deactivation.
+register_activation_hook( __FILE__, array( wontrapi(), '_activate' ) );
+register_deactivation_hook( __FILE__, array( wontrapi(), '_deactivate' ) );
