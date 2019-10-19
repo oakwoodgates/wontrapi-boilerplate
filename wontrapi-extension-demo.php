@@ -293,10 +293,10 @@ if ( ! function_exists( 'wontrapi_xd_fs' ) ) {
 				require_once dirname( dirname( __FILE__ ) ) . '/wontrapi/vendor/freemius/start.php';
 
 				$wontrapi_xd_fs = fs_dynamic_init( array(
-					'id'                  => 'YOUR_ID_HERE',
+					'id'                  => '4748',
 					'slug'                => 'wontrapi-extension-demo',
 					'type'                => 'plugin',
-					'public_key'          => 'YOUR_KEY_HERE',
+					'public_key'          => 'pk_49ac0804e922f5071ca56690f44a1',
 					'is_premium'          => true,
 					'is_premium_only'     => true,
 					'has_paid_plans'      => true,
