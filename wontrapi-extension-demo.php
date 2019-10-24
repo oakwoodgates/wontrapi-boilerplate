@@ -120,7 +120,7 @@ class Wontrapi_Extension_Demo {
 	 * @since  0.1.0
 	 */
 	public function hooks() {
-		add_action( 'init', array( $this, 'init' ) );
+		add_action( 'init', array( $this, 'init' ), 0 );
 	}
 
 	/**
@@ -188,15 +188,15 @@ class Wontrapi_Extension_Demo {
 	}
 
 	public function include_dependencies() {
-		if ( $this->is_parent_active_and_loaded() ) {
+		if ( $this->is_parent_loaded() ) {
 			// If parent already included, init add-on.
-			$this->fs_init();
+			$this->addon();
 		} else if ( $this->is_parent_active() ) {
 			// Init add-on only after the parent is loaded.
-			add_action( 'wontrapi_fs_loaded', array( $this, 'fs_init' ) );
+			add_action( 'wontrapi_fs_loaded', array( $this, 'addon' ) );
 		} else {
 			// Even though the parent is not activated, execute add-on for activation / uninstall hooks.
-			$this->fs_init();
+			$this->addon();
 		}
 	}
 
@@ -241,10 +241,11 @@ class Wontrapi_Extension_Demo {
 		<?php
 	}
 
-	public function is_parent_active_and_loaded() {
-		return $this->meets_requirements();
-		// Check if the parent's init SDK method exists.
-		// return function_exists( 'wontrapi_fs' );
+	public function is_parent_loaded() {
+		if ( class_exists( 'Wontrapi' ) && ! empty( Wontrapi::$loaded ) ) {
+			return true;
+		}
+		return false;
 	}
 
 	public function is_parent_active() {
@@ -264,7 +265,7 @@ class Wontrapi_Extension_Demo {
 		return false;
 	}
 
-	public function fs_init() {
+	public function addon() {
 
 		global $wontrapi_xd_fs;
 
