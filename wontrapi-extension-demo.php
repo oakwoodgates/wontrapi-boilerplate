@@ -201,20 +201,6 @@ class Wontrapi_Extension_Demo {
 	}
 
 	/**
-	 * Deactivates this plugin, hook this function on admin_init.
-	 *
-	 * @since  0.1.0
-	 */
-	public function deactivate_me() {
-
-		// We do a check for deactivate_plugins before calling it, to protect
-		// any developers from accidentally calling it too early and breaking things.
-		if ( function_exists( 'deactivate_plugins' ) ) {
-			deactivate_plugins( $this->basename );
-		}
-	}
-
-	/**
 	 * Adds a notice to the dashboard if the plugin requirements are not met.
 	 *
 	 * @since  0.1.0
@@ -300,6 +286,20 @@ class Wontrapi_Extension_Demo {
 
 		// Signal that the add-on's SDK was initiated.
 		do_action( 'wontrapi_xd_fs_loaded' );
+	}
+
+	/**
+	 * Deactivates this plugin, hook this function on admin_init.
+	 *
+	 * @since  0.1.0
+	 */
+	public function deactivate_me() {
+
+		// We do a check for deactivate_plugins before calling it, to protect
+		// any developers from accidentally calling it too early and breaking things.
+		if ( function_exists( 'deactivate_plugins' ) ) {
+			deactivate_plugins( $this->basename );
+		}
 	}
 
 	/**
