@@ -120,7 +120,7 @@ class Wontrapi_Extension_Demo {
 	 * @since  0.1.0
 	 */
 	public function hooks() {
-		add_action( 'init', array( $this, 'init' ), 0 );
+		add_action( 'init', array( $this, 'init' ) );
 	}
 
 	/**
@@ -188,10 +188,16 @@ class Wontrapi_Extension_Demo {
 	}
 
 	public function include_dependencies() {
-		// Init Freemius.
-		//wontrapi_fs();
-		// Signal that SDK was initiated.
-		//do_action( 'wontrapi_fs_loaded' );
+		if ( $this->is_parent_active_and_loaded() ) {
+			// If parent already included, init add-on.
+			$this->fs_init();
+		} else if ( $this->is_parent_active() ) {
+			// Init add-on only after the parent is loaded.
+			add_action( 'wontrapi_fs_loaded', array( $this, 'fs_init' ) );
+		} else {
+			// Even though the parent is not activated, execute add-on for activation / uninstall hooks.
+			$this->fs_init();
+		}
 	}
 
 	/**
@@ -233,6 +239,66 @@ class Wontrapi_Extension_Demo {
 			<?php echo wp_kses_post( $details ); ?>
 		</div>
 		<?php
+	}
+
+	public function is_parent_active_and_loaded() {
+		return $this->meets_requirements();
+		// Check if the parent's init SDK method exists.
+		// return function_exists( 'wontrapi_fs' );
+	}
+
+	public function is_parent_active() {
+		$active_plugins = get_option( 'active_plugins', array() );
+
+		if ( is_multisite() ) {
+			$network_active_plugins = get_site_option( 'active_sitewide_plugins', array() );
+			$active_plugins         = array_merge( $active_plugins, array_keys( $network_active_plugins ) );
+		}
+
+		foreach ( $active_plugins as $basename ) {
+			if ( 0 === strpos( $basename, 'wontrapi/' ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public function fs_init() {
+
+		global $wontrapi_xd_fs;
+
+		if ( ! isset( $wontrapi_xd_fs ) ) {
+			// Include Freemius SDK.
+			if ( file_exists( dirname( dirname( __FILE__ ) ) . '/wontrapi/vendor/freemius/start.php' ) ) {
+				// Try to load SDK from parent plugin folder.
+				require_once dirname( dirname( __FILE__ ) ) . '/wontrapi/vendor/freemius/start.php';
+
+				$wontrapi_xd_fs = fs_dynamic_init( array(
+					'id'                  => '4748',
+					'slug'                => 'wontrapi-extension-demo',
+					'type'                => 'plugin',
+					'public_key'          => 'pk_49ac0804e922f5071ca56690f44a1',
+					'is_premium'          => true,
+					'is_premium_only'     => true,
+					'has_paid_plans'      => true,
+					'is_org_compliant'    => false,
+					'parent'              => array(
+						'id'         => '1284',
+						'slug'       => 'wontrapi',
+						'public_key' => 'pk_f3f99e224cd062ba9d7fda46ab973',
+						'name'       => 'Wontrapi',
+					),
+					'menu'                => array(
+						'first-path'     => 'plugins.php',
+						'support'        => false,
+					),
+				) );
+			}
+		}
+
+		// Signal that the add-on's SDK was initiated.
+		do_action( 'wontrapi_xd_fs_loaded' );
 	}
 
 	/**
@@ -279,91 +345,3 @@ add_action( 'plugins_loaded', array( wontrapi_xd(), 'hooks' ) );
 // Activation and deactivation.
 register_activation_hook( __FILE__, array( wontrapi_xd(), '_activate' ) );
 register_deactivation_hook( __FILE__, array( wontrapi_xd(), '_deactivate' ) );
-
-if ( ! function_exists( 'wontrapi_xd_fs' ) ) {
-	// Create a helper function for easy SDK access.
-	function wontrapi_xd_fs() {
-		global $wontrapi_xd_fs;
-
-		if ( ! isset( $wontrapi_xd_fs ) ) {
-
-			// Include Freemius SDK.
-			if ( file_exists( dirname( dirname( __FILE__ ) ) . '/wontrapi/vendor/freemius/start.php' ) ) {
-				// Try to load SDK from parent plugin folder.
-				require_once dirname( dirname( __FILE__ ) ) . '/wontrapi/vendor/freemius/start.php';
-
-				$wontrapi_xd_fs = fs_dynamic_init( array(
-					'id'                  => '4748',
-					'slug'                => 'wontrapi-extension-demo',
-					'type'                => 'plugin',
-					'public_key'          => 'pk_49ac0804e922f5071ca56690f44a1',
-					'is_premium'          => true,
-					'is_premium_only'     => true,
-					'has_paid_plans'      => true,
-					'is_org_compliant'    => false,
-					'parent'              => array(
-						'id'         => '1284',
-						'slug'       => 'wontrapi',
-						'public_key' => 'pk_f3f99e224cd062ba9d7fda46ab973',
-						'name'       => 'Wontrapi',
-					),
-					'menu'                => array(
-						'first-path'     => 'plugins.php',
-						'support'        => false,
-					),
-				) );
-			}
-
-			return $wontrapi_xd_fs;
-		}
-	}
-}
-
-
-function wontrapi_xd_fs_is_parent_active_and_loaded() {
-	// Check if the parent's init SDK method exists.
-	return function_exists( 'wontrapi_fs' );
-}
-
-function wontrapi_xd_fs_is_parent_active() {
-	$active_plugins = get_option( 'active_plugins', array() );
-
-	if ( is_multisite() ) {
-		$network_active_plugins = get_site_option( 'active_sitewide_plugins', array() );
-		$active_plugins         = array_merge( $active_plugins, array_keys( $network_active_plugins ) );
-	}
-
-	foreach ( $active_plugins as $basename ) {
-		if ( 0 === strpos( $basename, 'wontrapi/' ) ) {
-			return true;
-		}
-	}
-
-	return false;
-}
-
-function wontrapi_xd_fs_init() {
-	if ( wontrapi_xd_fs_is_parent_active_and_loaded() ) {
-		// Init Freemius.
-		wontrapi_xd_fs();
-
-		// Signal that the add-on's SDK was initiated.
-		do_action( 'wontrapi_xd_fs_loaded' );
-
-		// Parent is active, add your init code here.
-
-	} else {
-		// Parent is inactive, add your error handling here.
-	}
-}
-
-if ( wontrapi_xd_fs_is_parent_active_and_loaded() ) {
-	// If parent already included, init add-on.
-	wontrapi_xd_fs_init();
-} else if ( wontrapi_xd_fs_is_parent_active() ) {
-	// Init add-on only after the parent is loaded.
-	add_action( 'wontrapi_fs_loaded', 'wontrapi_xd_fs_init' );
-} else {
-	// Even though the parent is not activated, execute add-on for activation / uninstall hooks.
-	wontrapi_xd_fs_init();
-}
