@@ -82,6 +82,14 @@ class Wontrapi_Extension_Demo {
 	protected $activation_errors = array();
 
 	/**
+	 * FS Addon
+	 * 
+	 * @var    array
+	 * @since  0.1.0 
+	 */
+	public static $fs;
+
+	/**
 	 * Singleton instance of plugin.
 	 *
 	 * @var    Wontrapi_Extension_Demo
@@ -254,16 +262,19 @@ class Wontrapi_Extension_Demo {
 	}
 
 	public function addon() {
+		$this->fs();
+		// Signal that the add-on's SDK was initiated.
+		do_action( 'wontrapi_xd_fs_loaded' );
+	}
 
-		global $wontrapi_xd_fs;
-
-		if ( ! isset( $wontrapi_xd_fs ) ) {
+	public function fs() {
+		if ( ! isset( self::$fs ) ) {
 			// Include Freemius SDK.
 			if ( file_exists( dirname( dirname( __FILE__ ) ) . '/wontrapi/vendor/freemius/start.php' ) ) {
 				// Try to load SDK from parent plugin folder.
 				require_once dirname( dirname( __FILE__ ) ) . '/wontrapi/vendor/freemius/start.php';
 
-				$wontrapi_xd_fs = fs_dynamic_init( array(
+				self::$fs = fs_dynamic_init( array(
 					'id'                  => '4748',
 					'slug'                => 'wontrapi-extension-demo',
 					'type'                => 'plugin',
@@ -285,9 +296,7 @@ class Wontrapi_Extension_Demo {
 				) );
 			}
 		}
-
-		// Signal that the add-on's SDK was initiated.
-		do_action( 'wontrapi_xd_fs_loaded' );
+		return self::$fs;
 	}
 
 	/**
