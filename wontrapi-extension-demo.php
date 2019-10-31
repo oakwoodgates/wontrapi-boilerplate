@@ -84,7 +84,7 @@ class Wontrapi_Extension_Demo {
 	/**
 	 * FS Addon.
 	 * 
-	 * @var    array
+	 * @var    object
 	 * @since  0.1.0 
 	 */
 	public static $fs = null;
