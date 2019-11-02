@@ -143,7 +143,7 @@ class Wontrapi_Extension_Demo {
 	/**
 	 * Fire up the addon
 	 * 
-	 * @since   0.5.3  Initial
+	 * @since   0.1.0
 	 * @return  void
 	 */
 	public function addon() {
@@ -217,12 +217,18 @@ class Wontrapi_Extension_Demo {
 		// Do checks for required classes / functions or similar.
 		// Add detailed messages to $this->activation_errors array.
 		if ( ! class_exists( 'Wontrapi') ) {
-			$this->activation_errors[] = sprintf( __( '<a href="%s" target="_blank">Download Wontrapi</a>', 'wontrapi-extension-demo' ), 'https://wontrapi.com' );
+			if ( file_exists( dirname( dirname( __FILE__ ) ) . '/wontrapi/wontrapi.php' ) ) {
+				$this->activation_errors[] = '<strong>' . __( 'Please activate Wontrapi before activating Wontrapi Extension Demo.', 'wontrapi-extension-demo' ) . '</strong>';
+			} else {
+				$this->activation_errors[] = sprintf( __( 'Install the Wontrapi plugin from <a href="%s">the admin</a> or download from <a href="%s" target="_blank">our website</a>', 'wontrapi-extension-demo' ), admin_url( 'plugin-install.php?s=wontrapi&tab=search&type=term' ), 'https://wontrapi.com' );
+			}
 			return false;
 		}
 
-		if ( null === self::$fs )
+		if ( null === self::$fs ) {
+			$this->activation_errors[] = __( 'Unable to load extension.', 'wontrapi-extension-demo' );
 			return false;
+		}
 
 		return true;
 	}
@@ -371,6 +377,7 @@ class Wontrapi_Extension_Demo {
 		}
 		return false;
 	}
+
 	/**
 	 * This plugin's directory.
 	 *
@@ -419,7 +426,7 @@ class Wontrapi_Extension_Demo {
 	 * Deactivate the plugin.
 	 * Uninstall routines should be in uninstall.php.
 	 *
-	 * @since  0.1.0
+	 * @since   0.1.0
 	 * @return  void
 	 */
 	public function _deactivate() {
