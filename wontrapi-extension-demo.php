@@ -123,40 +123,18 @@ class Wontrapi_Extension_Demo {
 		$this->basename = plugin_basename( __FILE__ );
 		$this->url 		= plugin_dir_url(  __FILE__ );
 		$this->path 	= plugin_dir_path( __FILE__ );
-		$this->addon();
+		$this->init_addon();
+		$this->registers();
 	}
 
 	/**
 	 * Add hooks and filters.
 	 * 
-	 * Priority needs to be
-	 * < 10 for CPT_Core,
-	 * < 5 for Taxonomy_Core,
-	 * and 0 for Widgets because widgets_init runs at init priority 1.
-	 * 
-	 * @since  0.1.0
-	 */
-	public function hooks() {
-		add_action( 'init', array( $this, 'init' ), 0 );
-	}
-
-	/**
-	 * Fire up the addon
-	 * 
 	 * @since   0.1.0
-	 * @return  void
 	 */
-	public function addon() {
-		if ( $this->is_parent_loaded() ) {
-			// If parent already included, init add-on.
-			$this->fs();
-		} else if ( $this->is_parent_active() ) {
-			// Init add-on only after the parent is loaded.
-			add_action( 'wontrapi_fs_loaded', array( $this, 'fs' ) );
-		} else {
-			// Even though the parent is not activated, execute add-on for activation / uninstall hooks.
-			$this->fs();
-		}
+	public function registers() {
+		// add_action( 'plugins_loaded', array( $this, 'init' ) );
+		add_action( 'init', array( $this, 'init' ), 0 );
 	}
 
 	/**
@@ -234,6 +212,43 @@ class Wontrapi_Extension_Demo {
 	}
 
 	/**
+	 * Check that the parent plugin is loaded
+	 * 
+	 * @since   0.1.0
+	 * @return  boolean
+	 */
+	public function is_parent_loaded() {
+
+		if ( class_exists( 'Wontrapi' ) && ! empty( Wontrapi::$fs ) ) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Check that the parent plugin is active
+	 * 
+	 * @since   0.1.0
+	 * @return  boolean
+	 */
+	public function is_parent_active() {
+		$active_plugins = get_option( 'active_plugins', array() );
+
+		if ( is_multisite() ) {
+			$network_active_plugins = get_site_option( 'active_sitewide_plugins', array() );
+			$active_plugins         = array_merge( $active_plugins, array_keys( $network_active_plugins ) );
+		}
+
+		foreach ( $active_plugins as $basename ) {
+			if ( 0 === strpos( $basename, 'wontrapi/' ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Adds a notice to the dashboard if the plugin requirements are not met.
 	 *
 	 * @since   0.1.0
@@ -286,43 +301,6 @@ class Wontrapi_Extension_Demo {
 	}
 
 	/**
-	 * Check that the parent plugin is loaded
-	 * 
-	 * @since   0.1.0
-	 * @return  boolean
-	 */
-	public function is_parent_loaded() {
-
-		if ( class_exists( 'Wontrapi' ) && ! empty( Wontrapi::$fs ) ) {
-			return true;
-		}
-		return false;
-	}
-
-	/**
-	 * Check that the parent plugin is active
-	 * 
-	 * @since   0.1.0
-	 * @return  boolean
-	 */
-	public function is_parent_active() {
-		$active_plugins = get_option( 'active_plugins', array() );
-
-		if ( is_multisite() ) {
-			$network_active_plugins = get_site_option( 'active_sitewide_plugins', array() );
-			$active_plugins         = array_merge( $active_plugins, array_keys( $network_active_plugins ) );
-		}
-
-		foreach ( $active_plugins as $basename ) {
-			if ( 0 === strpos( $basename, 'wontrapi/' ) ) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
 	 * Handle the addon loading.
 	 * Init the addon. Stash the object. Signal that the addon's SDK was initiated.
 	 * 
@@ -332,8 +310,7 @@ class Wontrapi_Extension_Demo {
 	public function fs() {
 		if ( ! isset( self::$fs ) && self::is_parent_loaded() ) {
 			
-			if ( file_exists( Wontrapi::dir( '/vendor/freemius/start.php' ) ) ) {
-				Wontrapi::include_file( 'vendor/freemius/start' );
+			if ( Wontrapi::include_file( 'vendor/freemius/start' ) ) {
 
 				self::$fs = fs_dynamic_init( array(
 					'id'                  => '4748',
@@ -361,6 +338,24 @@ class Wontrapi_Extension_Demo {
 		}
 	}
 
+	/**
+	 * Fire up the addon
+	 * 
+	 * @since   0.1.0
+	 * @return  void
+	 */
+	public function init_addon() {
+		if ( $this->is_parent_loaded() ) {
+			// If parent already included, init add-on.
+			$this->fs();
+		} else if ( $this->is_parent_active() ) {
+			// Init add-on only after the parent is loaded.
+			add_action( 'wontrapi_fs_loaded', array( $this, 'fs' ) );
+		} else {
+			// Even though the parent is not activated, execute add-on for activation / uninstall hooks.
+			$this->fs();
+		}
+	}
 
 	/**
 	 * Include a file from the includes directory.
@@ -446,8 +441,9 @@ function wontrapi_xd() {
 	return Wontrapi_Extension_Demo::get_instance();
 }
 // Kick it off.
-add_action( 'plugins_loaded', array( wontrapi_xd(), 'hooks' ), 20 );
+wontrapi_xd();
+// add_action( 'plugins_loaded', array( wontrapi_xd(), 'hooks' ), 20 );
 
 // Activation and deactivation.
 register_activation_hook( __FILE__, array( wontrapi_xd(), '_activate' ) );
-register_deactivation_hook( __FILE__, array( wontrapi_xd(), '_deactivate' ) );
+// register_deactivation_hook( __FILE__, array( wontrapi_xd(), '_deactivate' ) );
