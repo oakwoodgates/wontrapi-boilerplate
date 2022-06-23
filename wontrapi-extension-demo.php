@@ -217,7 +217,7 @@ class Wontrapi_Extension_Demo {
 	 * @since   0.1.0
 	 * @return  boolean
 	 */
-	public function is_parent_loaded() {
+	public static function is_parent_loaded() {
 
 		if ( class_exists( 'Wontrapi' ) && ! empty( Wontrapi::$fs ) ) {
 			return true;
@@ -231,7 +231,7 @@ class Wontrapi_Extension_Demo {
 	 * @since   0.1.0
 	 * @return  boolean
 	 */
-	public function is_parent_active() {
+	public static function is_parent_active() {
 		$active_plugins = get_option( 'active_plugins', array() );
 
 		if ( is_multisite() ) {
@@ -308,6 +308,8 @@ class Wontrapi_Extension_Demo {
 	 * @return  void 
 	 */
 	public function fs() {
+		global $wontrapi_xd_fs;
+
 		if ( ! isset( self::$fs ) && self::is_parent_loaded() ) {
 			
 			if ( Wontrapi::include_file( 'vendor/freemius/start' ) ) {
@@ -333,9 +335,12 @@ class Wontrapi_Extension_Demo {
 					),
 				) );
 
+				$wontrapi_xd_fs = self::$fs;
+
 				do_action( 'wontrapi_xd_fs_loaded' );
 			}
 		}
+		return self::$fs;
 	}
 
 	/**
@@ -345,10 +350,10 @@ class Wontrapi_Extension_Demo {
 	 * @return  void
 	 */
 	public function init_addon() {
-		if ( $this->is_parent_loaded() ) {
+		if ( self::is_parent_loaded() ) {
 			// If parent already included, init add-on.
 			$this->fs();
-		} else if ( $this->is_parent_active() ) {
+		} else if ( self::is_parent_active() ) {
 			// Init add-on only after the parent is loaded.
 			add_action( 'wontrapi_fs_loaded', array( $this, 'fs' ) );
 		} else {
@@ -444,6 +449,12 @@ function wontrapi_xd() {
 wontrapi_xd();
 // add_action( 'plugins_loaded', array( wontrapi_xd(), 'hooks' ), 20 );
 
+function wontrapi_xd_fs() {
+	return wontrapi_xd()::$fs;
+}
+wontrapi_xd_fs();
+
 // Activation and deactivation.
 register_activation_hook( __FILE__, array( wontrapi_xd(), '_activate' ) );
-// register_deactivation_hook( __FILE__, array( wontrapi_xd(), '_deactivate' ) );
+register_deactivation_hook( __FILE__, array( wontrapi_xd(), '_deactivate' ) );
+
